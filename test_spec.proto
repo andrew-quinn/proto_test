@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package test_spec;
+
+service TestSpec {
+  rpc TestCall (TestRequest) returns (TestReply) {}
+}
+
+message TestRequest {
+  int32 multiplier = 1;
+}
+
+message TestReply {
+  string message = 1;
+  repeated int32 numbers = 2;
+}
