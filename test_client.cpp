@@ -7,6 +7,8 @@
 
 #include "test_spec.grpc.pb.h"
 
+#include "name_num.h"
+
 class TestClient {
 public:
     explicit TestClient(std::shared_ptr<grpc::Channel> channel) :
@@ -14,8 +16,13 @@ public:
 
     std::string constructMessage(const test_spec::TestReply &reply) {
         const std::string msg = reply.message();
-        const google::protobuf::RepeatedField<std::int32_t> &numbers = reply.numbers();
-        return fmt::format("{}\n{}\n", msg, fmt::join(numbers.begin(), numbers.end(), ", "));
+        const google::protobuf::RepeatedPtrField<test_spec::NameNum> &nns = reply.namenums();
+        std::vector<NameNum> nameNums;
+        nameNums.reserve(nns.size());
+        for (auto &element : nns) {
+            nameNums.emplace_back(std::string{element.name()}, element.number());
+        }
+        return fmt::format("{}\n{}\n", msg, fmt::join(nameNums.begin(), nameNums.end(), "\n"));
     }
 
     std::string test(int32_t multiplier) {

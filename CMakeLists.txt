@@ -57,11 +57,15 @@ add_custom_command(
 include_directories("/home/walrus/.local/include/")
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
+add_executable(test_client test_client.cpp)
+add_executable(test_server test_server.cpp)
+
 foreach(_target test_client test_server)
     message(STATUS "Adding ${_target} to build with ${proto_srcs} and ${grpc_srcs}")
-    add_executable(${_target} "${_target}.cpp"
+    target_sources(${_target} PRIVATE
             ${proto_srcs}
-            ${grpc_srcs})
+            ${grpc_srcs}
+            name_num.h)
 
     target_link_libraries(${_target}
             ${_REFLECTION}

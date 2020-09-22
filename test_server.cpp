@@ -1,6 +1,5 @@
-#include <array>
 #include <memory>
-#include <string>
+#include <string_view>
 #include <vector>
 
 #include <fmt/format.h>
@@ -11,17 +10,28 @@
 
 #include "test_spec.grpc.pb.h"
 
+#include "name_num.h"
+
 class TestSpecImpl final : public test_spec::TestSpec::Service {
-    static constexpr std::array<std::int32_t, 5> baseValues{1, 2, 3, 4, 5};
+    const std::vector<int32_t> baseValues{1, 2, 3, 4, 5};
+    const std::vector<std::string_view> baseNames{"anne", "bob", "carrie", "dave", "edna"};
 
     grpc::Status TestCall(grpc::ServerContext *context,
                           const test_spec::TestRequest *request,
                           test_spec::TestReply *reply) override {
         const int32_t multiplier = request->multiplier();
         reply->set_message(makeMessage(multiplier));
-        std::vector<int32_t> values = getValues(multiplier);
-        reply->mutable_numbers()->Add(values.begin(), values.end());
 
+        const auto nameNums = makeNameNums(baseNames, getValues(multiplier));
+        google::protobuf::RepeatedPtrField<test_spec::NameNum> *nns = reply->mutable_namenums();
+        for (const auto &element : nameNums) {
+            test_spec::NameNum nn;
+            nn.set_name(element.name);
+            nn.set_number(element.num);
+            nns->Add(std::move(nn));
+        }
+
+        // TODO: make error case out of empty nameNums
         // TODO: make error case out of overflow
         return grpc::Status::OK;
     }

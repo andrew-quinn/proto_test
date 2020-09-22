@@ -10,7 +10,12 @@ message TestRequest {
   int32 multiplier = 1;
 }
 
+message NameNum {
+  string name = 1;
+  int32 number = 2;
+}
+
 message TestReply {
   string message = 1;
-  repeated int32 numbers = 2;
+  repeated NameNum nameNums = 2;
 }
