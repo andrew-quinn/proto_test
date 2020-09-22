@@ -1,0 +1,9 @@
+# CLion metadata
+.idea
+
+# CLion default build folders
+cmake-build*
+
+# misc other
+build
+
