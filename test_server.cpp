@@ -16,16 +16,23 @@ class TestSpecImpl final : public test_spec::TestSpec::Service {
     const std::vector<int32_t> baseValues{1, 2, 3, 4, 5};
     const std::vector<std::string_view> baseNames{"anne", "bob", "carrie", "dave", "edna"};
 
-    grpc::Status TestCall(grpc::ServerContext *context,
-                          const test_spec::TestRequest *request,
-                          test_spec::TestReply *reply) override {
+    grpc::Status TestVectorCall(grpc::ServerContext *context,
+                          const test_spec::TestVectorRequest *request,
+                          test_spec::TestVectorReply *reply) override {
         const int32_t multiplier = request->multiplier();
 
-        setReplyMessage(reply, multiplier);
-        setReplyNameNums(reply, multiplier);
+        setVectorReplyMessage(reply, multiplier);
+        setVectorReplyNameNums(reply, multiplier);
 
         // TODO: make error case out of empty nameNums
         // TODO: make error case out of overflow
+        return grpc::Status::OK;
+    }
+
+    grpc::Status TestMapCall(grpc::ServerContext *context,
+                             const test_spec::TestMapRequest *request,
+                             test_spec::TestMapReply *reply) override {
+
         return grpc::Status::OK;
     }
 
@@ -37,13 +44,13 @@ class TestSpecImpl final : public test_spec::TestSpec::Service {
         return values;
     }
 
-    void setReplyMessage(test_spec::TestReply *reply, int32_t multiplier) const {
+    void setVectorReplyMessage(test_spec::TestVectorReply *reply, int32_t multiplier) const {
         static constexpr std::string_view messageFormat = "Multiplying values by {}...";
         reply->set_message(fmt::format(messageFormat, multiplier));
 
     }
 
-    void setReplyNameNums(test_spec::TestReply *reply, int32_t multiplier) const {
+    void setVectorReplyNameNums(test_spec::TestVectorReply *reply, int32_t multiplier) const {
         const auto nameNums = makeNameNums(baseNames, getValues(multiplier));
         google::protobuf::RepeatedPtrField<test_spec::NameNum> *nns = reply->mutable_namenums();
         for (const auto &element : nameNums) {

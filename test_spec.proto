@@ -3,19 +3,19 @@ syntax = "proto3";
 package test_spec;
 
 service TestSpec {
-  rpc TestCall (TestRequest) returns (TestReply) {}
+  rpc TestVectorCall (TestVectorRequest) returns (TestVectorReply) {}
 }
 
-message TestRequest {
+message TestVectorRequest {
   int32 multiplier = 1;
 }
 
+message TestVectorReply {
+  string message = 1;
+  repeated NameNum nameNums = 2;
+}
 message NameNum {
   string name = 1;
   int32 number = 2;
 }
 
-message TestReply {
-  string message = 1;
-  repeated NameNum nameNums = 2;
-}

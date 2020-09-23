@@ -14,7 +14,7 @@ public:
     explicit TestClient(std::shared_ptr<grpc::Channel> channel) :
             stub(test_spec::TestSpec::NewStub(channel)) {}
 
-    std::string constructMessage(const test_spec::TestReply &reply) {
+    std::string constructMessage(const test_spec::TestVectorReply &reply) {
         const std::string msg = reply.message();
         const google::protobuf::RepeatedPtrField<test_spec::NameNum> &nns = reply.namenums();
         std::vector<NameNum> nameNums;
@@ -25,14 +25,14 @@ public:
         return fmt::format("{}\n{}\n", msg, fmt::join(nameNums.begin(), nameNums.end(), "\n"));
     }
 
-    std::string test(int32_t multiplier) {
-        test_spec::TestRequest request;
+    std::string testVectors(int32_t multiplier) {
+        test_spec::TestVectorRequest request;
         request.set_multiplier(multiplier);
 
-        test_spec::TestReply reply;
+        test_spec::TestVectorReply reply;
         grpc::ClientContext context;
 
-        grpc::Status status = stub->TestCall(&context, request, &reply);
+        grpc::Status status = stub->TestVectorCall(&context, request, &reply);
 
         if (status.ok()) {
             return constructMessage(reply);
@@ -52,7 +52,7 @@ int main() {
             target, grpc::InsecureChannelCredentials()
     ));
     int32_t factor = 3;
-    std::string response = client.test(factor);
+    std::string response = client.testVectors(factor);
 
     fmt::print(response);
     return 0;
