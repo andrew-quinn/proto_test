@@ -20,8 +20,30 @@ class TestSpecImpl final : public test_spec::TestSpec::Service {
                           const test_spec::TestRequest *request,
                           test_spec::TestReply *reply) override {
         const int32_t multiplier = request->multiplier();
-        reply->set_message(makeMessage(multiplier));
 
+        setReplyMessage(reply, multiplier);
+        setReplyNameNums(reply, multiplier);
+
+        // TODO: make error case out of empty nameNums
+        // TODO: make error case out of overflow
+        return grpc::Status::OK;
+    }
+
+    [[nodiscard]] std::vector<int32_t> getValues(int32_t multiplier) const {
+        std::vector<int32_t> values(baseValues.size());
+        std::transform(baseValues.begin(), baseValues.end(), values.begin(),
+                       [&](int32_t v) -> int32_t { return v * multiplier; }
+        );
+        return values;
+    }
+
+    void setReplyMessage(test_spec::TestReply *reply, int32_t multiplier) const {
+        static constexpr std::string_view messageFormat = "Multiplying values by {}...";
+        reply->set_message(fmt::format(messageFormat, multiplier));
+
+    }
+
+    void setReplyNameNums(test_spec::TestReply *reply, int32_t multiplier) const {
         const auto nameNums = makeNameNums(baseNames, getValues(multiplier));
         google::protobuf::RepeatedPtrField<test_spec::NameNum> *nns = reply->mutable_namenums();
         for (const auto &element : nameNums) {
@@ -30,22 +52,6 @@ class TestSpecImpl final : public test_spec::TestSpec::Service {
             nn.set_number(element.num);
             nns->Add(std::move(nn));
         }
-
-        // TODO: make error case out of empty nameNums
-        // TODO: make error case out of overflow
-        return grpc::Status::OK;
-    }
-
-    std::vector<int32_t> getValues(int32_t multiplier) const {
-        std::vector<int32_t> values(baseValues.size());
-        std::transform(baseValues.begin(), baseValues.end(), values.begin(),
-                       [&](int32_t v) -> int32_t { return v * multiplier; }
-        );
-        return values;
-    }
-
-    std::string makeMessage(const int32_t multiplier) const {
-        return fmt::format("Multiplying values by {}...", multiplier);
     }
 };
 
