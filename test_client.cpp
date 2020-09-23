@@ -14,6 +14,41 @@ public:
     explicit TestClient(std::shared_ptr<grpc::Channel> channel) :
             stub(test_spec::TestSpec::NewStub(channel)) {}
 
+    std::string testVectors(int32_t multiplier) {
+        test_spec::TestVectorRequest request;
+        request.set_multiplier(multiplier);
+
+        test_spec::TestVectorReply reply;
+        grpc::ClientContext context;
+
+        grpc::Status status = stub->TestVectorCall(&context, request, &reply);
+        return handleReply(status, reply);
+    }
+
+    std::string testMaps(int32_t multiplier) {
+        test_spec::TestMapRequest request;
+        request.set_multiplier(multiplier);
+
+        test_spec::TestMapReply reply;
+        grpc::ClientContext context;
+
+        grpc::Status status = stub->TestMapCall(&context, request, &reply);
+        return handleReply(status, reply);
+    }
+
+private:
+    std::unique_ptr<test_spec::TestSpec::Stub> stub;
+
+    template<typename T>
+    std::string handleReply(const grpc::Status& status, T& reply) {
+        if (status.ok()) {
+            return constructMessage(reply);
+        } else {
+            fmt::print("{}: {}\n", status.error_code(), status.error_message());
+            return "RPC failed";
+        }
+    }
+
     std::string constructMessage(const test_spec::TestVectorReply &reply) {
         const std::string msg = reply.message();
         const google::protobuf::RepeatedPtrField<test_spec::NameNum> &nns = reply.namenums();
@@ -39,43 +74,6 @@ public:
         }
         return ret;
     }
-
-    std::string testVectors(int32_t multiplier) {
-        test_spec::TestVectorRequest request;
-        request.set_multiplier(multiplier);
-
-        test_spec::TestVectorReply reply;
-        grpc::ClientContext context;
-
-        grpc::Status status = stub->TestVectorCall(&context, request, &reply);
-
-        if (status.ok()) {
-            return constructMessage(reply);
-        } else {
-            fmt::print("{}: {}\n", status.error_code(), status.error_message());
-            return "RPC failed\n";
-        }
-    }
-
-    std::string testMaps(int32_t multiplier) {
-        test_spec::TestMapRequest request;
-        request.set_multiplier(multiplier);
-
-        test_spec::TestMapReply reply;
-        grpc::ClientContext context;
-
-        grpc::Status status = stub->TestMapCall(&context, request, &reply);
-
-        if (status.ok()) {
-            return constructMessage(reply);
-        } else {
-            fmt::print("{}: {}\n", status.error_code(), status.error_message());
-            return "RPC failed";
-        }
-    }
-
-private:
-    std::unique_ptr<test_spec::TestSpec::Stub> stub;
 };
 
 int main() {
