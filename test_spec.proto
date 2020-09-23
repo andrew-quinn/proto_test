@@ -4,6 +4,7 @@ package test_spec;
 
 service TestSpec {
   rpc TestVectorCall (TestVectorRequest) returns (TestVectorReply) {}
+  rpc TestMapCall (TestMapRequest) returns (TestMapReply) {}
 }
 
 message TestVectorRequest {
@@ -14,8 +15,16 @@ message TestVectorReply {
   string message = 1;
   repeated NameNum nameNums = 2;
 }
+
+message TestMapRequest {
+  int32 multiplier = 1;
+}
+
+message TestMapReply {
+  map<string, int32> nameNums = 1;
+}
+
 message NameNum {
   string name = 1;
   int32 number = 2;
 }
-

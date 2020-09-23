@@ -32,6 +32,9 @@ class TestSpecImpl final : public test_spec::TestSpec::Service {
     grpc::Status TestMapCall(grpc::ServerContext *context,
                              const test_spec::TestMapRequest *request,
                              test_spec::TestMapReply *reply) override {
+        const int32_t multiplier = request->multiplier();
+
+        setMapReplyNameNums(reply, multiplier);
 
         return grpc::Status::OK;
     }
@@ -47,7 +50,6 @@ class TestSpecImpl final : public test_spec::TestSpec::Service {
     void setVectorReplyMessage(test_spec::TestVectorReply *reply, int32_t multiplier) const {
         static constexpr std::string_view messageFormat = "Multiplying values by {}...";
         reply->set_message(fmt::format(messageFormat, multiplier));
-
     }
 
     void setVectorReplyNameNums(test_spec::TestVectorReply *reply, int32_t multiplier) const {
@@ -58,6 +60,15 @@ class TestSpecImpl final : public test_spec::TestSpec::Service {
             nn.set_name(element.name);
             nn.set_number(element.num);
             nns->Add(std::move(nn));
+        }
+    }
+
+    void setMapReplyNameNums(test_spec::TestMapReply *reply, int32_t multiplier) const {
+        const std::vector<int32_t> values = getValues(multiplier);
+        const size_t N = std::min(baseNames.size(), values.size());
+        google::protobuf::Map<std::string, int32_t> &nameNums = *(reply->mutable_namenums());
+        for (size_t i = 0; i < N; ++i) {
+            nameNums[std::string{baseNames[i]}] = values[i];
         }
     }
 };
